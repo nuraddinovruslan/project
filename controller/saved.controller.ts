@@ -2,7 +2,6 @@ import type { Request, Response } from "express";
 import Saved from "../model/saved.model.js";
 import { Product } from "../model/product.model.js";
 
-
 Saved.sync({force: false})
 
 export const saved = async (req: Request, res: Response) => {
@@ -36,6 +35,6 @@ export const getSaved = async (req: Request, res: Response) => {
     include: [{ model: Product, as: "product" }], 
   });
 
-  res.json(savedItems);
+  res.json(savedItems)  ;
 };
 

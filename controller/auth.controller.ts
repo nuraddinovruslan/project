@@ -46,6 +46,7 @@ export const register = async (req: Request, res: Response) => {
   }
 };
 
+
 export const login = async (req: Request, res: Response) => {
   try {
     const { email, password } = req.body;
@@ -58,48 +59,54 @@ export const login = async (req: Request, res: Response) => {
 
     const user = await User.findOne({ where: { email } });
     if (!user) {
-      return res.status(401).json({ 
-        message: "Email yoki parol noto'g'ri" 
+      return res.status(401).json({
+        message: "Email yoki parol noto'g'ri",
       });
     }
 
-    const userPassword = user.getDataValue('password');
+    const userPassword = user.getDataValue("password");
     if (!userPassword) {
-      return res.status(500).json({ 
-        message: "Server error: Password not found" 
+      return res.status(500).json({
+        message: "Server error: Password not found",
       });
     }
 
     const isCorrect = await bcrypt.compare(password, userPassword);
     if (!isCorrect) {
-      return res.status(401).json({ 
-        message: "Email yoki parol noto'g'ri" 
+      return res.status(401).json({
+        message: "Email yoki parol noto'g'ri",
       });
     }
 
     const token = jwt.sign(
-      { 
-        id: user.getDataValue('id'), 
-        email: user.getDataValue('email'),
-        role: user.getDataValue('role') || 'user'
+      {
+        id: user.getDataValue("id"),
+        email: user.getDataValue("email"),
+        role: user.getDataValue("role") || "USER",
       },
       process.env.JWT_SECRET as string,
       { expiresIn: "1d" }
     );
 
+    res.cookie("token", token, {
+      httpOnly: true, 
+      secure: false,  
+      sameSite: "lax",
+      maxAge: 24 * 60 * 60 * 1000,
+    });
+
     const userResponse = user.toJSON();
     delete userResponse.password;
 
-    res.json({ 
-      message: "Login successful", 
-      token,
-      user: userResponse
+    return res.json({
+      message: "Login successful",
+      user: userResponse,
     });
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
+    return res.status(500).json({
       message: "Login error",
-      error: error instanceof Error ? error.message : "Unknown error"
+      error: error instanceof Error ? error.message : "Unknown error",
     });
   }
 };

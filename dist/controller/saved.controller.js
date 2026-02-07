@@ -24,7 +24,7 @@ export const getSaved = async (req, res) => {
     const user = req.user;
     const savedItems = await Saved.findAll({
         where: { userId: user.id },
-        include: [{ model: Product, as: "products" }],
+        include: [{ model: Product, as: "product" }],
     });
     res.json(savedItems);
 };
